@@ -1,5 +1,4 @@
 PHONY: test
 
 test:
-	go test ./...
-
+	go test -cover -coverprofile=c.out ./...
