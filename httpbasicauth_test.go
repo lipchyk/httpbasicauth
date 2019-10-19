@@ -16,7 +16,9 @@ func TestHandle(t *testing.T) {
 		},
 	)
 
-	creds := map[string]string{"foo": "bar"}
+	creds := SimpleCredentialMap{"foo": "bar"}
+
+	// creds := map[string]string{"foo": "bar"}
 	authhandler := Handle(creds, "Restricted zone")(handler)
 
 	tests := []struct {

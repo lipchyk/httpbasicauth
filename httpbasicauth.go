@@ -5,12 +5,29 @@ import (
 	"net/http"
 )
 
+type Checker interface {
+	Check(username, password string) bool
+}
+
+// SimpleCredentialMap wraps map[string]string
+type SimpleCredentialMap map[string]string
+
+func (c SimpleCredentialMap) Check(u, p string) bool {
+	password, ok := c[u]
+	if !ok {
+		return false
+	}
+
+	return password == p
+}
+
 // Handle is a middleware that wraps your handler with http basic auth functionality
-func Handle(creds map[string]string, realm string) func(http.Handler) http.Handler {
+func Handle(c Checker, realm string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
-				if !checkBasicAuth(creds, r) {
+				u, p := extractCreds(r)
+				if !c.Check(u, p) {
 					unauthorized(w, realm)
 					return
 				}
@@ -27,15 +44,7 @@ func unauthorized(w http.ResponseWriter, realm string) {
 	w.Write([]byte("401 Unauthorized\n"))
 }
 
-func checkBasicAuth(creds map[string]string, r *http.Request) bool {
-	u, p, ok := r.BasicAuth()
-	if !ok {
-		return false
-	}
-
-	if password, ok := creds[u]; ok {
-		return p == password
-	}
-
-	return false
+func extractCreds(r *http.Request) (username, password string) {
+	username, password, _ = r.BasicAuth()
+	return
 }

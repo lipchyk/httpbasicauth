@@ -13,7 +13,7 @@ import (
 )
 
 // credentials
-creds := map[string]string{"u$eR": "$ecret"}
+creds := httpbasicauth.SimpleCredentialMap{"u$eR": "$ecret"}
 middleware := httpbasicauth.Handle(creds, "Restricted Zone")
 
 yourhandler := http.HandlerFunc(
